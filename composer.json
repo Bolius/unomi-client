@@ -1,12 +1,12 @@
 {
-  "name": "bolius/unomi",
-  "description": "Bolius Unomi",
+  "name": "bolius/unomi-client",
+  "description": "Bolius Unomi client",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
-      "name": "Fabien Potencier",
-      "email": "fabien@symfony.com"
+      "name": "Lars Køie",
+      "email": "lko@bolius.dk"
     }
   ],
   "minimum-stability": "dev",
