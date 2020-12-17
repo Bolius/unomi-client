@@ -1,0 +1,21 @@
+{
+  "name": "bolius/unomi",
+  "description": "Bolius Unomi",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Fabien Potencier",
+      "email": "fabien@symfony.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Bolius\\UnomiClient\\": "src/"
+    },
+    "exclude-from-classmap": [
+      "/tests/"
+    ]
+  }
+}
