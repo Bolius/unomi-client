@@ -7,11 +7,11 @@
 namespace Bolius\UnomiClient\Repository;
 
 
-use Bolius\Unomi\EAV\Attribute;
-use Bolius\Unomi\EAV\SchemaService;
-use Bolius\Unomi\Entity\Segment;
-use Bolius\Unomi\Unomi\Client;
-use Bolius\Unomi\Entity\Profile;
+use Bolius\UnomiClient\EAV\Attribute;
+use Bolius\UnomiClient\EAV\SchemaService;
+use Bolius\UnomiClient\Entity\Segment;
+use Bolius\UnomiClient\Unomi\Client;
+use Bolius\UnomiClient\Entity\Profile;
 
 class ProfileRepository extends AbstractRepository
 {

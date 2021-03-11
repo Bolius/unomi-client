@@ -7,7 +7,7 @@
 namespace Bolius\UnomiClient\Repository;
 
 
-use Bolius\Unomi\EAV\Entity;
+use Bolius\UnomiClient\EAV\Entity;
 
 abstract class AbstractRepository
 {
