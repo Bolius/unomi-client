@@ -1,0 +1,17 @@
+
+
+profile:
+  attributes:
+    - name: nbOfVisits
+      type: string
+
+    - name: firstVisit
+      type: string
+
+    - name: lastVisit
+      type: string
+
+    - name: name
+      type: string
+
+
