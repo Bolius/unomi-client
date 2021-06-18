@@ -92,6 +92,14 @@ class Client
     }
 
     /**
+     * @return mixed
+     */
+    public function getRules()
+    {
+        return $this->get('/rules');
+    }
+
+    /**
      * @param string $ruleId
      * @return mixed
      */
@@ -100,6 +108,15 @@ class Client
         return $this->get('/rules/' . $ruleId);
     }
 
+    public function getRuleStatistics (string $ruleId)
+    {
+        return $this->get('/rules/' . $ruleId . '/statistics');
+    }
+
+    /**
+     * @param $segmentId
+     * @return mixed
+     */
     public function getSegment($segmentId)
     {
         return $this->get('/segments/' . $segmentId);
@@ -120,6 +137,43 @@ class Client
     public function getSegments()
     {
         return $this->get('/segments');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getScorings()
+    {
+        return $this->get('/scoring');
+    }
+
+    public function getGoal($goalId)
+    {
+        return $this->get('/goals/' . $goalId);
+    }
+
+    public function getGoals()
+    {
+        return $this->get('/goals');
+    }
+
+    /**
+     * @param $scoringId
+     * @return mixed
+     */
+    public function getScoring($scoringId)
+    {
+        return $this->get('/scoring/' . $scoringId);
+    }
+
+    public function getCampaign($campaignId)
+    {
+        return $this->get('/campaigns/' . $campaignId);
+    }
+
+    public function getCampaigns()
+    {
+        return $this->get('/campaigns');
     }
 
     /**
