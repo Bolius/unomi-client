@@ -68,6 +68,11 @@ class Client
         return $this->get('/profiles/' . $profileId);
     }
 
+    public function getProfileCount ()
+    {
+        return $this->get('/profiles/count');
+    }
+
     public function getSessionsByProfile(string $profileId)
     {
         return $this->get('/profiles/' . $profileId . '/sessions');
@@ -80,6 +85,11 @@ class Client
     public function getSession(string $sessionId)
     {
         return $this->get('/profiles/sessions/' . $sessionId);
+    }
+
+    public function getSessionCount ()
+    {
+        return $this->post('/query/session/count', null);
     }
 
     /**
@@ -207,6 +217,7 @@ class Client
         $result = curl_exec($ch);
         $this->lastRequestTime = microtime(TRUE) - $start;
         $data = json_decode($result);
+
         if (is_null($this->firstResponse)) {
             $this->firstResponse = $data;
         }
