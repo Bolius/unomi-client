@@ -1,3 +1,6 @@
+## 1.1.0 (March 17, 2022)
+  - Add profile-count and split url in two
+
 ## 1.0.0 (November 18, 2021)
   - Add getProfileCount() and getSessionCount()
 
