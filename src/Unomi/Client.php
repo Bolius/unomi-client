@@ -9,7 +9,15 @@ namespace Bolius\UnomiClient\Unomi;
 class Client
 {
 
-    protected $url;
+    /**
+     * @var string
+     */
+    protected $urlPrivate;
+
+    /**
+     * @var string
+     */
+    protected $urlPublic;
 
     protected $host = 'localhost';
     protected $port = '8181';
@@ -36,9 +44,13 @@ class Client
      * @param $username
      * @param $password
      */
-    public function __construct($url)
+    public function __construct(
+        $urlPrivate,
+        $urlPublic
+    )
     {
-        $this->url = $url;
+        $this->urlPrivate = $urlPrivate;
+        $this->urlPublic = $urlPublic;
     }
 
 
@@ -48,8 +60,8 @@ class Client
      */
     public function getProfiles(
         array $condition = NULL,
-        int $offset = 0,
-        int $limit = 20
+        int   $offset = 0,
+        int   $limit = 20
     )
     {
         return $this->post('/profiles/search', [
@@ -57,6 +69,22 @@ class Client
             'limit' => $limit,
             'condition' => empty($condition) ? NULL : $condition,
         ]);
+    }
+
+    /**
+     * @param array|NULL $condion
+     * @return mixed
+     */
+    public function getProfileCount(
+        array $condition = NULL
+    )
+    {
+        if (empty($condition)) {
+            // shortcut to
+            return $this->get('/profiles/count');
+        }
+
+        return (int) $this->post('/query/profile/count', $condition);
     }
 
     /**
@@ -68,14 +96,36 @@ class Client
         return $this->get('/profiles/' . $profileId);
     }
 
-    public function getProfileCount ()
+    public function getProfileIdByProperty(
+        $propertyName, $propertyValue
+    )
     {
-        return $this->get('/profiles/count');
+        $profiles = $this->post('/profiles/search', [
+            'condition' => [
+                'type' => 'profilePropertyCondition',
+                'parameterValues' => [
+                    'propertyName' => 'properties.' . $propertyName,
+                    'propertyValue' => $propertyValue,
+                    'comparisonOperator' => 'equals',
+                ]
+            ]
+        ]);
+
+        if (isset($profiles->list)) {
+            if (isset($profiles->list[0])) {
+                if (isset($profiles->list[0]->itemId)) {
+                    return $profiles->list[0]->itemId;
+                }
+            }
+        }
+
+        return FALSE;
     }
+
 
     public function getSessionsByProfile(string $profileId)
     {
-        return $this->get('/profiles/' . $profileId . '/sessions');
+        return $this->get('/profiles/' . $profileId . '/sessions?sort=timeStamp:desc');
     }
 
     /**
@@ -87,7 +137,7 @@ class Client
         return $this->get('/profiles/sessions/' . $sessionId);
     }
 
-    public function getSessionCount ()
+    public function getSessionCount()
     {
         return $this->post('/query/session/count', null);
     }
@@ -113,14 +163,55 @@ class Client
      * @param string $ruleId
      * @return mixed
      */
-    public function getRule (string $ruleId)
+    public function getRule(string $ruleId)
     {
         return $this->get('/rules/' . $ruleId);
     }
 
-    public function getRuleStatistics (string $ruleId)
+    public function getRuleStatistics(string $ruleId)
     {
         return $this->get('/rules/' . $ruleId . '/statistics');
+    }
+
+    /**
+     * @param string $userListId
+     * @return mixed
+     */
+    public function getUserList(string $userListId)
+    {
+        return $this->get('/lists/' . $userListId);
+    }
+
+    /**
+     * @param $userListIds string|array
+     * @return mixed
+     */
+    public function getUserListProfileCount($userListIds)
+    {
+
+        if (!is_array($userListIds)) {
+            $userListIds = [$userListIds];
+        }
+        return $this->getProfileCount([
+            'type' => 'profileUserListCondition',
+            'parameterValues' => [
+                'matchType' => 'in',
+                'lists' => $userListIds,
+            ]
+        ]);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUserLists()
+    {
+        return $this->get('/lists')->list;
+    }
+
+    public function getUse()
+    {
+
     }
 
     /**
@@ -136,7 +227,7 @@ class Client
      * @param $segmentId
      * @return mixed
      */
-    public function getSegmentCount($segmentId)
+    public function getSegmentProfileCount($segmentId)
     {
         return $this->get('/segments/' . $segmentId . '/count');
     }
@@ -197,7 +288,7 @@ class Client
 
 
         curl_setopt_array($ch, [
-            CURLOPT_URL => $this->url . '/cxs' . $url,
+            CURLOPT_URL => $this->urlPrivate . '/cxs' . $url,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_POST => TRUE,
             CURLOPT_POSTFIELDS => json_encode($data),
@@ -216,29 +307,50 @@ class Client
         $start = microtime(TRUE);
         $result = curl_exec($ch);
         $this->lastRequestTime = microtime(TRUE) - $start;
-        $data = json_decode($result);
+        $response = json_decode($result);
 
         if (is_null($this->firstResponse)) {
             $this->firstResponse = $data;
         }
 
-        $this->lastResponse = $data;
-        return $data;
+        if (0) {
+
+            print_r([
+                'request' => 'POST ' . $url . "\n" . json_encode($data, JSON_PRETTY_PRINT),
+                'response' => $result,
+            ]);
+            die;
+        }
+
+        $this->lastResponse = $response;
+        return $response;
     }
 
-    public function postPublic($data)
+    /**
+     * @param $data
+     * @param null $profileId If it exists.
+     * @return mixed
+     */
+    public function postPublic($data, $profileId = null)
     {
         $ch = curl_init();
 
+        $headers = [
+            'Content-type: application/json',
+            'Accept: application/json',
+        ];
+
+        if ($profileId) {
+            $headers[] = 'Cookie: context-profile-id=' . $profileId;
+        }
+
         curl_setopt_array($ch, [
-            CURLOPT_URL => 'http://' . $this->host . ':' . $this->port . '/context.json',
-            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => $this->urlPublic . '/context.json',
+            CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_HEADER => TRUE,
             CURLOPT_POST => TRUE,
             CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => [
-                'Content-type: application/json',
-                'Accept: application/json',
-            ],
+            CURLOPT_HTTPHEADER => $headers,
         ]);
 
         $this->lastRequest = $data;
@@ -246,7 +358,7 @@ class Client
         $start = microtime(TRUE);
         $result = curl_exec($ch);
         $this->lastRequestTime = microtime(TRUE) - $start;
-
+        print_r(curl_getinfo($ch));
         $data = json_decode($result);
 
         $this->lastResponse = $data;
@@ -262,7 +374,7 @@ class Client
 
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_URL => $this->url . '/cxs' . $url,
+            CURLOPT_URL => $this->urlPrivate . '/cxs' . $url,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_HTTPHEADER => [
                 'Accept: application/json',
