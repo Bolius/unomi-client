@@ -152,6 +152,17 @@ class Client
     }
 
     /**
+     * @param null $condition
+     * @return mixed
+     */
+    public function getEventCount($condition = null)
+    {
+        return $this->post('/query/event/count', [
+            'condition' => $condition,
+        ]);
+    }
+
+    /**
      * @return mixed
      */
     public function getRules()
