@@ -1,3 +1,6 @@
+## 1.3.0 (September 26, 2022)
+  - add auth header to postPublic
+
 ## 1.2.0 (March 23, 2022)
   - Add getEventCount
 
