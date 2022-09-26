@@ -6,6 +6,8 @@
 
 namespace Bolius\UnomiClient\Unomi;
 
+use Bolius\UnomiBundle\Entity\Session;
+
 class Client
 {
 
@@ -137,6 +139,18 @@ class Client
         return $this->get('/profiles/sessions/' . $sessionId);
     }
 
+    /**
+     * @param Session $session
+     * @return mixed
+     */
+    public function storeSession(array $session)
+    {
+        return $this->post(sprintf('/profiles/sessions/%s', $session['itemId']), $session);
+    }
+
+    /**
+     * @return mixed
+     */
     public function getSessionCount()
     {
         return $this->post('/query/session/count', null);
@@ -150,6 +164,7 @@ class Client
     {
         return $this->get('/events/' . $eventId);
     }
+
 
     /**
      * @param null $condition
@@ -317,6 +332,7 @@ class Client
         $this->lastRequest = $data;
         $start = microtime(TRUE);
         $result = curl_exec($ch);
+
         $this->lastRequestTime = microtime(TRUE) - $start;
         $response = json_decode($result);
 
@@ -349,6 +365,7 @@ class Client
         $headers = [
             'Content-type: application/json',
             'Accept: application/json',
+            'X-Unomi-Peer: 670c26d1cc413346c3b2fd9ce65dab41',
         ];
 
         if ($profileId) {
@@ -358,7 +375,6 @@ class Client
         curl_setopt_array($ch, [
             CURLOPT_URL => $this->urlPublic . '/context.json',
             CURLOPT_RETURNTRANSFER => TRUE,
-            CURLOPT_HEADER => TRUE,
             CURLOPT_POST => TRUE,
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => $headers,
@@ -369,7 +385,6 @@ class Client
         $start = microtime(TRUE);
         $result = curl_exec($ch);
         $this->lastRequestTime = microtime(TRUE) - $start;
-        print_r(curl_getinfo($ch));
         $data = json_decode($result);
 
         $this->lastResponse = $data;
