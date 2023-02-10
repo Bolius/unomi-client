@@ -1,3 +1,6 @@
+## 1.5.0 (February 10, 2023)
+  - fix empty list
+
 ## 1.4.0 (February 10, 2023)
   - add ->list
 
