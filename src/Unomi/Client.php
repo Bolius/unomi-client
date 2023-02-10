@@ -66,11 +66,13 @@ class Client
         int   $limit = 20
     )
     {
-        return $this->post('/profiles/search', [
+        $req = [
             'offset' => $offset,
             'limit' => $limit,
             'condition' => empty($condition) ? NULL : $condition,
-        ]);
+        ];
+        $resp = $this->post('/profiles/search', $req);
+        return $resp->list;
     }
 
     /**
@@ -86,7 +88,13 @@ class Client
             return $this->get('/profiles/count');
         }
 
-        return (int) $this->post('/query/profile/count', $condition);
+        $response = $this->post('/query/profile/count', $condition);
+
+        if (is_int($response)) {
+            return $response;
+        }
+
+        return 0;
     }
 
     /**
