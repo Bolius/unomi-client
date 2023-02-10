@@ -72,7 +72,10 @@ class Client
             'condition' => empty($condition) ? NULL : $condition,
         ];
         $resp = $this->post('/profiles/search', $req);
-        return $resp->list;
+        if (isset($resp->list)) {
+            return $resp->list;
+        }
+        return FALSE;
     }
 
     /**
