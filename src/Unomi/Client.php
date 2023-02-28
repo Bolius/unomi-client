@@ -26,6 +26,13 @@ class Client
     protected $username = 'karaf';
     protected $password = 'karaf';
 
+    /**
+     * Unomi cURL Timeout in seconds.
+     *
+     * @var int
+     */
+    protected $timeout = 30;
+
     protected $firstRequestMethod;
     protected $firstRequestPath;
 
@@ -53,6 +60,24 @@ class Client
     {
         $this->urlPrivate = $urlPrivate;
         $this->urlPublic = $urlPublic;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTimeout(): int
+    {
+        return $this->timeout;
+    }
+
+    /**
+     * @param int $timeout
+     * @return Client
+     */
+    public function setTimeout(int $timeout): Client
+    {
+        $this->timeout = $timeout;
+        return $this;
     }
 
 
@@ -156,15 +181,18 @@ class Client
      */
     public function storeSession(array $session)
     {
-        return $this->post(sprintf('/profiles/sessions/%s', $session['itemId']), $session);
+        return $this->post(
+            sprintf('/profiles/sessions/%s', $session['itemId']),
+            $session
+        );
     }
 
     /**
      * @return mixed
      */
-    public function getSessionCount()
+    public function getSessionCount($condition = null)
     {
-        return $this->post('/query/session/count', null);
+        return $this->post('/query/session/count', $condition);
     }
 
     /**
@@ -173,7 +201,7 @@ class Client
      */
     public function getEvent(string $eventId)
     {
-        return $this->get('/events/' . $eventId);
+        return $this->get(sprintf('/events/%s', $eventId));
     }
 
 
@@ -183,9 +211,7 @@ class Client
      */
     public function getEventCount($condition = null)
     {
-        return $this->post('/query/event/count', [
-            'condition' => $condition,
-        ]);
+        return $this->post('/query/event/count', $condition);
     }
 
     /**
@@ -202,12 +228,16 @@ class Client
      */
     public function getRule(string $ruleId)
     {
-        return $this->get('/rules/' . $ruleId);
+        return $this->get(sprintf('/rules/%s', $ruleId));
     }
 
+    /**
+     * @param string $ruleId
+     * @return mixed
+     */
     public function getRuleStatistics(string $ruleId)
     {
-        return $this->get('/rules/' . $ruleId . '/statistics');
+        return $this->get(sprintf('/rules/%s/statistics', $ruleId));
     }
 
     /**
@@ -266,7 +296,7 @@ class Client
      */
     public function getSegmentProfileCount($segmentId)
     {
-        return $this->get('/segments/' . $segmentId . '/count');
+        return (int) $this->get(sprintf('/segments/%s/count', $segmentId));
     }
 
     /**
