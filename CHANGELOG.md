@@ -1,3 +1,6 @@
+## 1.7.0 (March 03, 2023)
+  - add timeout to curl
+
 ## 1.6.0 (February 28, 2023)
   - fix getEventCount and some formatting
 
