@@ -71,7 +71,7 @@ class Client
     }
 
     /**
-     * @param int $timeout
+     * @param int $timeout Timeout in seconds
      * @return Client
      */
     public function setTimeout(int $timeout): Client
@@ -353,12 +353,12 @@ class Client
     {
         $ch = curl_init();
 
-
         curl_setopt_array($ch, [
             CURLOPT_URL => $this->urlPrivate . '/cxs' . $url,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_POST => TRUE,
             CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_HTTPHEADER => [
                 'Content-type: application/json',
                 'Accept: application/json',
@@ -416,6 +416,7 @@ class Client
         curl_setopt_array($ch, [
             CURLOPT_URL => $this->urlPublic . '/context.json',
             CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_POST => TRUE,
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => $headers,
@@ -442,6 +443,7 @@ class Client
         $ch = curl_init();
         curl_setopt_array($ch, [
             CURLOPT_URL => $this->urlPrivate . '/cxs' . $url,
+            CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_HTTPHEADER => [
                 'Accept: application/json',
