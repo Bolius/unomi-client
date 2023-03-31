@@ -1,3 +1,6 @@
+## 1.8.0 (March 31, 2023)
+  - add storeSegment()
+
 ## 1.7.0 (March 03, 2023)
   - add timeout to curl
 
