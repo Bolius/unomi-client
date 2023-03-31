@@ -339,6 +339,19 @@ class Client
         return $this->get('/campaigns/' . $campaignId);
     }
 
+    /**
+     * @param array $segment
+     * @return mixed
+     */
+    public function storeSegment(array $segment)
+    {
+        return $this->post('/segments', $segment);
+    }
+
+    
+    /**
+     * @return mixed
+     */
     public function getCampaigns()
     {
         return $this->get('/campaigns');
