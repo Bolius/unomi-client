@@ -1,3 +1,6 @@
+## 1.9.0 (May 25, 2023)
+  - add doesProfileMatchCondition
+
 ## 1.8.0 (March 31, 2023)
   - add storeSegment()
 
