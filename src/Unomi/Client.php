@@ -134,6 +134,37 @@ class Client
         return $this->get('/profiles/' . $profileId);
     }
 
+    /**
+     * @param string $profileId
+     * @param array|null $condition
+     */
+    public function doesProfileMatchCondition(
+        string $profileId,
+        array $condition = NULL
+    )
+    {
+        return (bool) $this->getProfileCount([
+            'type' => 'booleanCondition',
+            'parameterValues' => [
+                [
+                    'type' => 'profilePropertyCondition',
+                    'parameterValues' => [
+                        'propertyName' => 'itemId',
+                        'comparisonOperator' => 'equals',
+                        'propertyValue' => $profileId,
+                    ]
+                ]
+            ]
+        ]);
+    }
+
+    /**
+     * Returns a single profile id that has a matching property value
+     *
+     * @param $propertyName
+     * @param $propertyValue
+     * @return false
+     */
     public function getProfileIdByProperty(
         $propertyName, $propertyValue
     )
