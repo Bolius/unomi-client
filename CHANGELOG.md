@@ -1,3 +1,6 @@
+## 1.10.0 (June 01, 2023)
+  - fix doesProfileMatchCondition()
+
 ## 1.9.0 (May 25, 2023)
   - add doesProfileMatchCondition
 
