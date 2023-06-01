@@ -140,20 +140,24 @@ class Client
      */
     public function doesProfileMatchCondition(
         string $profileId,
-        array $condition = NULL
+        array  $condition = NULL
     )
     {
-        return (bool) $this->getProfileCount([
+        return (bool)$this->getProfileCount([
             'type' => 'booleanCondition',
             'parameterValues' => [
-                [
-                    'type' => 'profilePropertyCondition',
-                    'parameterValues' => [
-                        'propertyName' => 'itemId',
-                        'comparisonOperator' => 'equals',
-                        'propertyValue' => $profileId,
-                    ]
-                ]
+                'operator' => 'and',
+                'subConditions' => [
+                    [
+                        'type' => 'profilePropertyCondition',
+                        'parameterValues' => [
+                            'propertyName' => 'itemId',
+                            'comparisonOperator' => 'equals',
+                            'propertyValue' => $profileId,
+                        ],
+                    ],
+                    $condition
+                ],
             ]
         ]);
     }
