@@ -6,10 +6,9 @@
 
 namespace Bolius\UnomiClient\Unomi;
 
-use Bolius\UnomiBundle\Entity\Session;
-
 class Client
 {
+
 
     /**
      * @var string
@@ -20,6 +19,8 @@ class Client
      * @var string
      */
     protected $urlPublic;
+
+    protected $version = 0;
 
     protected $host = 'localhost';
     protected $port = '8181';
@@ -54,12 +55,13 @@ class Client
      * @param $password
      */
     public function __construct(
-        $urlPrivate,
-        $urlPublic
+
+        $urlPrivate, $urlPublic, $version
     )
     {
         $this->urlPrivate = $urlPrivate;
         $this->urlPublic = $urlPublic;
+        $this->version = $version;
     }
 
     /**
@@ -96,7 +98,10 @@ class Client
             'limit' => $limit,
             'condition' => empty($condition) ? NULL : $condition,
         ];
+
+
         $resp = $this->post('/profiles/search', $req);
+
         if (isset($resp->list)) {
             return $resp->list;
         }
@@ -117,7 +122,6 @@ class Client
         }
 
         $response = $this->post('/query/profile/count', $condition);
-
         if (is_int($response)) {
             return $response;
         }
@@ -132,6 +136,15 @@ class Client
     public function getProfile(string $profileId)
     {
         return $this->get('/profiles/' . $profileId);
+    }
+
+    /**
+     * @param array $data
+     * @return mixed
+     */
+    public function storeProfile(array $data)
+    {
+        return $this->post('/profiles', $data);
     }
 
     /**
@@ -154,6 +167,34 @@ class Client
                             'propertyName' => 'itemId',
                             'comparisonOperator' => 'equals',
                             'propertyValue' => $profileId,
+                        ],
+                    ],
+                    $condition
+                ],
+            ]
+        ]);
+    }
+
+    /**
+     * @param string $profileId
+     * @param array|null $condition
+     */
+    public function doesProfileByEmailMatchCondition(
+        string $email,
+        array  $condition = NULL
+    )
+    {
+        return (bool)$this->getProfileCount([
+            'type' => 'booleanCondition',
+            'parameterValues' => [
+                'operator' => 'and',
+                'subConditions' => [
+                    [
+                        'type' => 'profilePropertyCondition',
+                        'parameterValues' => [
+                            'propertyName' => 'properties.email',
+                            'comparisonOperator' => 'equals',
+                            'propertyValue' => $email,
                         ],
                     ],
                     $condition
@@ -196,9 +237,107 @@ class Client
     }
 
 
-    public function getSessionsByProfile(string $profileId)
+    /**
+     * @param array|null $condition
+     * @param int $offset
+     * @param int $limit
+     * @return mixed
+     */
+    public function getSessions(
+        array $condition = NULL,
+        int   $offset = 0,
+        int   $limit = 20
+    )
     {
-        return $this->get('/profiles/' . $profileId . '/sessions?sort=timeStamp:desc');
+        return $this->post('/profiles/search/sessions/', [
+            'offset' => $offset,
+            'limit' => $limit,
+            'condition' => $condition,
+        ])->list;
+    }
+
+    /**
+     * @param string $profileId
+     * @param null $q
+     * @param null $offset
+     * @param null $size
+     * @param string $sort
+     * @return mixed
+     */
+    public function getSessionsByProfile(
+        string $profileId,
+               $q = NULL,
+               $offset = NULL,
+               $size = NULL,
+               $sort = 'timeStamp:desc'
+    )
+    {
+        $url = sprintf('/profiles/%s/sessions?', $profileId);
+        if (!is_null($q)) {
+            $url .= '&q=' . $q;
+        }
+        if (!is_null($offset)) {
+            $url .= '&offset=' . (int)$offset;
+        }
+        if (!is_null($sort)) {
+            $url .= '&sort=' . $sort;
+        }
+        if (!is_null($size)) {
+            $url .= '&size=' . (int)$size;
+        }
+
+        return $this->get($url)->list;
+
+    }
+
+    public function getEventsByProfile(
+        string $profileId
+    )
+    {
+        return $this->post('/events/search', [
+            'condition' => [
+                'type' => 'eventPropertyCondition',
+                'parameterValues' => [
+                    'propertyName' => 'profileId',
+                    'comparisonOperator' => 'equals',
+                    'propertyValue' => $profileId,
+                ]
+            ],
+            'limit' => 5,
+        ])->list;
+    }
+
+    /**
+     * @param string $sessionId
+     * @param null $q
+     * @param null $offset
+     * @param null $size
+     * @param string $sort
+     * @return mixed
+     */
+    public function getEventsBySession(
+        string $sessionId,
+               $q = NULL,
+               $offset = NULL,
+               $size = NULL,
+               $sort = 'timeStamp:desc'
+    )
+    {
+        $url = sprintf('/profiles/sessions/%s/events?', $sessionId);
+        if (!is_null($q)) {
+            $url .= '&q=' . $q;
+        }
+        if (!is_null($offset)) {
+            $url .= '&offset=' . (int)$offset;
+        }
+        if (!is_null($sort)) {
+            $url .= '&sort=' . $sort;
+        }
+        if (!is_null($size)) {
+            $url .= '&size=' . (int)$size;
+        }
+
+        return $this->get($url)->list;
     }
 
     /**
@@ -211,7 +350,7 @@ class Client
     }
 
     /**
-     * @param Session $session
+     * @param array $session
      * @return mixed
      */
     public function storeSession(array $session)
@@ -254,7 +393,7 @@ class Client
      */
     public function getRules()
     {
-        return $this->get('/rules');
+        return $this->get('/rules')->list;
     }
 
     /**
@@ -311,19 +450,15 @@ class Client
         return $this->get('/lists')->list;
     }
 
-    public function getUse()
-    {
-
-    }
-
     /**
      * @param $segmentId
      * @return mixed
      */
     public function getSegment($segmentId)
     {
-        return $this->get('/segments/' . $segmentId);
+        return $this->get(sprintf('/segments/%s', $segmentId));
     }
+
 
     /**
      * @param $segmentId
@@ -331,33 +466,33 @@ class Client
      */
     public function getSegmentProfileCount($segmentId)
     {
-        return (int) $this->get(sprintf('/segments/%s/count', $segmentId));
+        return $this->get(sprintf('/segments/%s/count', $segmentId));
     }
 
-    /**
-     * @return mixed
-     */
-    public function getSegments()
-    {
-        return $this->get('/segments');
-    }
 
     /**
      * @return mixed
      */
     public function getScorings()
     {
-        return $this->get('/scoring');
+        return $this->get('/scoring')->list;
     }
 
+    /**
+     * @param $goalId
+     * @return mixed
+     */
     public function getGoal($goalId)
     {
-        return $this->get('/goals/' . $goalId);
+        return $this->get(sprintf('/goals/%s', $goalId));
     }
 
+    /**
+     * @return mixed
+     */
     public function getGoals()
     {
-        return $this->get('/goals');
+        return $this->get('/goals')->list;
     }
 
     /**
@@ -369,9 +504,13 @@ class Client
         return $this->get('/scoring/' . $scoringId);
     }
 
+    /**
+     * @param $campaignId
+     * @return mixed
+     */
     public function getCampaign($campaignId)
     {
-        return $this->get('/campaigns/' . $campaignId);
+        return $this->get(sprintf('/campaigns/%s', $campaignId));
     }
 
     /**
@@ -383,13 +522,47 @@ class Client
         return $this->post('/segments', $segment);
     }
 
-    
     /**
      * @return mixed
      */
     public function getCampaigns()
     {
-        return $this->get('/campaigns');
+        return $this->get('/campaigns')->list;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOpenapiSpec()
+    {
+        return $this->get('/openapi.json');
+    }
+
+    /**
+     * @param string $profileId
+     * @param array $data
+     * @param string|null $sessionId
+     * @deprecated Not tested
+     *
+     */
+    public function registerEventOnProfile(
+        string $profileId,
+        array  $data,
+        string $sessionId = NULL
+    )
+    {
+
+        $body = [
+            'events' => [
+                $data,
+            ],
+        ];
+
+        if (!empty($sessionId)) {
+            $body['sessionId'] = $sessionId;
+        }
+
+        $this->postPublic($body, $profileId);
     }
 
     /**
@@ -399,6 +572,7 @@ class Client
      */
     public function post($url, $data)
     {
+
         $ch = curl_init();
 
         curl_setopt_array($ch, [
@@ -424,18 +598,20 @@ class Client
 
         $this->lastRequestTime = microtime(TRUE) - $start;
         $response = json_decode($result);
-
         if (is_null($this->firstResponse)) {
+
             $this->firstResponse = $data;
         }
 
         if (0) {
 
             print_r([
-                'request' => 'POST ' . $url . "\n" . json_encode($data, JSON_PRETTY_PRINT),
+                'request' => 'POST ' . $url,
+                'body' => $data,
+                'bodyJson' => json_encode($data),
                 'response' => $result,
+                'curl' => curl_getinfo($ch),
             ]);
-            die;
         }
 
         $this->lastResponse = $response;
