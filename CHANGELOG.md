@@ -1,3 +1,6 @@
+## 1.11.0 (August 14, 2023)
+  - add v1 and v2 clients plus some other
+
 ## 1.10.0 (June 01, 2023)
   - fix doesProfileMatchCondition()
 
