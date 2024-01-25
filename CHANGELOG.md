@@ -1,3 +1,6 @@
+## 1.12.0 (January 25, 2024)
+  - store raw response in lastResponse in stead of json_decoded response
+
 ## 1.11.0 (August 14, 2023)
   - add v1 and v2 clients plus some other
 
