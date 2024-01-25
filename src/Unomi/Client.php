@@ -593,8 +593,10 @@ class Client
             $this->firstRequest = $data;
         }
         $this->lastRequest = $data;
+
         $start = microtime(TRUE);
         $result = curl_exec($ch);
+        $this->lastResponse = $result;
 
         $this->lastRequestTime = microtime(TRUE) - $start;
         $response = json_decode($result);
@@ -614,7 +616,6 @@ class Client
             ]);
         }
 
-        $this->lastResponse = $response;
         return $response;
     }
 
