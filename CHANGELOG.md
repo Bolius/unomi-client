@@ -1,3 +1,6 @@
+## 1.13.0 (April 09, 2024)
+  - reduce timeout from 30 to 5 s
+
 ## 1.12.0 (January 25, 2024)
   - store raw response in lastResponse in stead of json_decoded response
 
