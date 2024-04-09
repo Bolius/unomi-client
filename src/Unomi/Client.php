@@ -32,7 +32,12 @@ class Client
      *
      * @var int
      */
-    protected $timeout = 30;
+    protected $timeout = 5;
+
+    /**
+     * @var
+     */
+    protected $progressFunction;
 
     protected $firstRequestMethod;
     protected $firstRequestPath;
